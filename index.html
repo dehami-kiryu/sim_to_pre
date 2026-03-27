@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Physics Prediction Studio | AI物理予測アプリ企画サイト</title>
+    <style>
+      :root {
+        --bg: #0b1020;
+        --bg-soft: #121a31;
+        --card: rgba(18, 26, 49, 0.88);
+        --line: rgba(255, 255, 255, 0.1);
+        --text: #f4f7fb;
+        --muted: #a8b3c7;
+        --accent: #62b0ff;
+        --accent-2: #7ef0c6;
+        --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+        --max: 1180px;
+        --radius: 24px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Inter", "Noto Sans JP", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top right, rgba(98, 176, 255, 0.16), transparent 26%),
+          radial-gradient(circle at top left, rgba(126, 240, 198, 0.12), transparent 22%),
+          linear-gradient(180deg, #09101e 0%, #0d1428 45%, #0a1020 100%);
+        line-height: 1.75;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .container {
+        width: min(var(--max), calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        backdrop-filter: blur(14px);
+        background: rgba(7, 12, 24, 0.7);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .topbar-inner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        padding: 14px 0;
+      }
+
+      .brand {
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        font-size: 1rem;
+      }
+
+      .brand span {
+        color: var(--accent);
+      }
+
+      .nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .nav a {
+        font-size: 0.92rem;
+        color: var(--muted);
+        padding: 8px 12px;
+        border-radius: 999px;
+        transition: 0.2s ease;
+      }
+
+      .nav a:hover {
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .hero {
+        padding: 72px 0 48px;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 28px;
+        align-items: center;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        color: var(--accent-2);
+        border: 1px solid rgba(126, 240, 198, 0.2);
+        background: rgba(126, 240, 198, 0.08);
+        font-size: 0.9rem;
+        font-weight: 700;
+      }
+
+      h1 {
+        margin: 18px 0 18px;
+        font-size: clamp(2.2rem, 5vw, 4.4rem);
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+      }
+
+      .hero p {
+        margin: 0 0 24px;
+        color: var(--muted);
+        font-size: 1.05rem;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 14px 18px;
+        border-radius: 14px;
+        font-weight: 700;
+        border: 1px solid transparent;
+        transition: 0.2s ease;
+      }
+
+      .button.primary {
+        background: linear-gradient(135deg, var(--accent), #85c4ff);
+        color: #07101c;
+        box-shadow: var(--shadow);
+      }
+
+      .button.secondary {
+        border-color: var(--line);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text);
+      }
+
+      .button:hover {
+        transform: translateY(-1px);
+      }
+
+      .hero-card {
+        background: linear-gradient(180deg, rgba(18, 26, 49, 0.95), rgba(11, 16, 32, 0.92));
+        border: 1px solid var(--line);
+        border-radius: 30px;
+        padding: 22px;
+        box-shadow: var(--shadow);
+      }
+
+      .hero-screen {
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: #0e172d;
+      }
+
+      .hero-screen img {
+        aspect-ratio: 16 / 10;
+        object-fit: cover;
+      }
+
+      .hero-note {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .stat {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        padding: 14px;
+      }
+
+      .stat strong {
+        display: block;
+        font-size: 1.1rem;
+      }
+
+      .stat span {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      section {
+        padding: 28px 0 56px;
+      }
+
+      .section-head {
+        max-width: 820px;
+        margin-bottom: 26px;
+      }
+
+      .section-kicker {
+        color: var(--accent-2);
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        font-size: 0.82rem;
+      }
+
+      h2 {
+        margin: 10px 0 12px;
+        font-size: clamp(1.7rem, 4vw, 2.7rem);
+        line-height: 1.15;
+      }
+
+      .section-head p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .overview-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+      }
+
+      .overview-card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 22px;
+        box-shadow: var(--shadow);
+      }
+
+      .overview-card .num {
+        color: var(--accent);
+        font-size: 0.92rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+      }
+
+      .overview-card h3 {
+        margin: 10px 0 10px;
+        font-size: 1.2rem;
+      }
+
+      .overview-card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .page-block {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 26px;
+        align-items: start;
+        margin-bottom: 32px;
+      }
+
+      .page-block:last-child {
+        margin-bottom: 0;
+      }
+
+      .page-image,
+      .page-copy {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        box-shadow: var(--shadow);
+      }
+
+      .page-image {
+        overflow: hidden;
+      }
+
+      .page-image img {
+        aspect-ratio: 16 / 10;
+        object-fit: cover;
+        background: #13203b;
+      }
+
+      .page-copy {
+        padding: 26px;
+      }
+
+      .page-label {
+        color: var(--accent);
+        font-weight: 800;
+        font-size: 0.88rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .page-copy h3 {
+        margin: 10px 0 12px;
+        font-size: 1.7rem;
+        line-height: 1.2;
+      }
+
+      .page-copy p {
+        margin: 0 0 16px;
+        color: var(--muted);
+      }
+
+      .info-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .info-item {
+        padding: 12px 14px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .info-item strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 0.95rem;
+      }
+
+      .info-item span {
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+
+      .feature-card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 22px;
+      }
+
+      .feature-card h3 {
+        margin: 0 0 8px;
+        font-size: 1.1rem;
+      }
+
+      .feature-card p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .footer {
+        padding: 28px 0 60px;
+      }
+
+      .footer-card {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+        align-items: center;
+        background: linear-gradient(180deg, rgba(18, 26, 49, 0.95), rgba(11, 16, 32, 0.92));
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        padding: 24px;
+      }
+
+      .footer-card p {
+        margin: 6px 0 0;
+        color: var(--muted);
+      }
+
+      .code {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 980px) {
+        .hero-grid,
+        .page-block,
+        .overview-grid,
+        .feature-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-note {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .topbar-inner {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .hero {
+          padding-top: 56px;
+        }
+
+        .page-copy,
+        .overview-card,
+        .feature-card,
+        .footer-card {
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container topbar-inner">
+        <a href="#top" class="brand">Physics <span>Prediction Studio</span></a>
+        <nav class="nav">
+          <a href="#overview">4ページ構成</a>
+          <a href="#pages">画面説明</a>
+          
+        </nav>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="container hero-grid">
+          <div>
+            <div class="eyebrow">AI × 物理シミュレーション × ゲーム開発支援</div>
+            <h1>条件入力から、<br />物理挙動を即時に予測するアプリ</h1>
+            <p>Physics Prediction Studio は、DeepONet や HNN を活用し、爆風・衝撃波・吹っ飛び軌道などの物理挙動を高速に予測して可視化するアプリ構想です。ユーザーが条件を入力すると、AIが物理シミュレーション結果を予測し、その結果を直感的に確認できるようにします。</p>
+            <div class="hero-actions">
+              <a class="button primary" href="#pages">画面構成を見る</a>
+            </div>
+          </div>
+
+          <div class="hero-card">
+            <div class="hero-screen">
+              <!-- ここをトップ用の画面画像に差し替え -->
+              <img src="images/hero-overview.png" alt="Physics Prediction Studio のトップイメージ" />
+            </div>
+            <div class="hero-note">
+              <div class="stat">
+                <strong>4 Pages</strong>
+                <span>アプリ全体を整理した構成</span>
+              </div>
+              <div class="stat">
+                <strong>Input → Predict</strong>
+                <span>条件入力から物理挙動を予測</span>
+              </div>
+              <div class="stat">
+                <strong>Visualization</strong>
+                <span>結果をアニメーションと指標で確認</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="overview">
+        <div class="container">
+          <div class="section-head">
+            <div class="section-kicker">Overview</div>
+            <h2>1ページ目と2ページ目を統合した、4ページ構成</h2>
+            <p>
+              もともとの「トップページ」と「シナリオ選択ページ」を統合し、面接で説明しやすく、かつ実装負荷も抑えやすい4ページ構成に整理しています。
+            </p>
+          </div>
+
+          <div class="overview-grid">
+            <article class="overview-card">
+              <div class="num">PAGE 01</div>
+              <h3>トップ＋シナリオ一覧</h3>
+              <p>アプリの目的、価値、対象シナリオを一目で伝える導入画面です。</p>
+            </article>
+            <article class="overview-card">
+              <div class="num">PAGE 02</div>
+              <h3>シミュレーション実行</h3>
+              <p>条件入力、AI予測、可視化を1画面に集約したメイン画面です。</p>
+            </article>
+            <article class="overview-card">
+              <div class="num">PAGE 03</div>
+              <h3>比較・検証</h3>
+              <p>AI予測と数値シミュレーションの差、速度、実用性を確認する画面です。</p>
+            </article>
+            <article class="overview-card">
+              <div class="num">PAGE 04</div>
+              <h3>モデル情報</h3>
+              <p>DeepONet と HNN の使い分けや学習データ、技術的な背景を示します。</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="pages">
+        <div class="container">
+          <div class="section-head">
+            <div class="section-kicker">Pages</div>
+            <h2>各ページの画面イメージと、表示内容の具体化</h2>
+            <p>下の画像は各ページの画面イメージです。アプリ全体の流れと、それぞれの画面で何を確認・操作できるかが伝わる構成にしています。</p>
+          </div>
+
+          <div class="page-block">
+            <div class="page-image">
+              <!-- PAGE 01 の画像に差し替え -->
+              <img src="images/page-01-home-scenarios.png" alt="トップ＋シナリオ一覧ページのイメージ" />
+            </div>
+            <div class="page-copy">
+              <div class="page-label">Page 01</div>
+              <h3>トップ＋シナリオ一覧</h3>
+              <p>
+                このページでは、アプリの目的と扱える物理シナリオを同時に見せます。最初の一画面で、何のためのツールで、どのような用途に使えるかが分かる構成にします。
+              </p>
+              <div class="info-list">
+                <div class="info-item">
+                  <strong>表示するもの</strong>
+                  <span>アプリ概要、価値提案、扱うシナリオカード、各シナリオの簡易説明</span>
+                </div>
+                <div class="info-item">
+                  <strong>シナリオ例</strong>
+                  <span>爆風拡散、衝撃波、水面波動、吹っ飛び軌道、揺れもの</span>
+                </div>
+                <div class="info-item">
+                  <strong>面接での役割</strong>
+                  <span>研究アプリではなく、ゲーム開発の試作支援ツールであることを最初に伝える</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="page-block">
+            <div class="page-image">
+              <!-- PAGE 02 の画像に差し替え -->
+              <img src="images/page-02-simulation.png" alt="シミュレーション実行ページのイメージ" />
+            </div>
+            <div class="page-copy">
+              <div class="page-label">Page 02</div>
+              <h3>シミュレーション実行</h3>
+              <p>
+                このページがメイン画面です。左で条件を入力し、中央でAIによる予測結果を可視化し、右で推論時間や誤差、主要な指標を確認できるようにします。
+              </p>
+              <div class="info-list">
+                <div class="info-item">
+                  <strong>左カラム</strong>
+                  <span>爆発強度、初速度、質量、減衰率、障害物有無、モデル選択などの入力パネル</span>
+                </div>
+                <div class="info-item">
+                  <strong>中央カラム</strong>
+                  <span>物理挙動のアニメーション、時刻スライダー、AI予測と数値解の重ね表示</span>
+                </div>
+                <div class="info-item">
+                  <strong>右カラム</strong>
+                  <span>推論時間、平均誤差、最大誤差、影響範囲やエネルギー推移などの指標</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="page-block">
+            <div class="page-image">
+              <!-- PAGE 03 の画像に差し替え -->
+              <img src="images/page-03-compare.png" alt="比較・検証ページのイメージ" />
+            </div>
+            <div class="page-copy">
+              <div class="page-label">Page 03</div>
+              <h3>比較・検証</h3>
+              <p>
+                AI予測がどの程度実用に耐えるかを見せるページです。数値シミュレーションとの並列比較によって、速さだけでなく信頼性も説明できます。
+              </p>
+              <div class="info-list">
+                <div class="info-item">
+                  <strong>比較軸</strong>
+                  <span>AI予測 vs 数値解、モデルA vs モデルB、条件違いごとの比較</span>
+                </div>
+                <div class="info-item">
+                  <strong>表示するもの</strong>
+                  <span>並列アニメーション、誤差グラフ、差分ヒートマップ、ケース別比較テーブル</span>
+                </div>
+                <div class="info-item">
+                  <strong>面接での役割</strong>
+                  <span>AIは万能ではないが、試作段階では十分価値があると示す</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="page-block">
+            <div class="page-image">
+              <!-- PAGE 04 の画像に差し替え -->
+              <img src="images/page-04-models.png" alt="モデル情報ページのイメージ" />
+            </div>
+            <div class="page-copy">
+              <div class="page-label">Page 04</div>
+              <h3>モデル情報</h3>
+              <p>
+                DeepONet と HNN の役割分担や学習データ、モデル性能を整理するページです。技術面を深掘りされたときに答えやすくなります。
+              </p>
+              <div class="info-list">
+                <div class="info-item">
+                  <strong>DeepONet の用途</strong>
+                  <span>爆風や衝撃波、水面波動など、場の変化をまとめて予測するタスク</span>
+                </div>
+                <div class="info-item">
+                  <strong>HNN の用途</strong>
+                  <span>吹っ飛び軌道や振り子運動など、保存則を意識した運動予測</span>
+                </div>
+                <div class="info-item">
+                  <strong>表示するもの</strong>
+                  <span>学習データ概要、学習曲線、検証誤差、推論速度、将来拡張の方向性</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      
+    </main>
+  </body>
+</html>
